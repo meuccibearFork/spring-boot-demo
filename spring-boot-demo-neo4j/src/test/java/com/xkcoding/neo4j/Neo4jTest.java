@@ -5,7 +5,7 @@ import com.xkcoding.neo4j.model.Lesson;
 import com.xkcoding.neo4j.model.Student;
 import com.xkcoding.neo4j.service.NeoService;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;

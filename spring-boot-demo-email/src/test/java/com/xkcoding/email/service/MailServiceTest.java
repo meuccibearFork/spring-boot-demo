@@ -2,7 +2,7 @@ package com.xkcoding.email.service;
 
 import cn.hutool.core.io.resource.ResourceUtil;
 import com.xkcoding.email.SpringBootDemoEmailApplicationTests;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
