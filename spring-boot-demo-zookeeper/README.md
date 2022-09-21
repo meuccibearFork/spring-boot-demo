@@ -371,7 +371,6 @@ public class ZooLockAspect {
 > 测试分布式锁
 
 ```java
-@RunWith(SpringRunner.class)
 @SpringBootTest
 @Slf4j
 public class SpringBootDemoZookeeperApplicationTests {

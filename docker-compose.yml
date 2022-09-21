@@ -1,0 +1,32 @@
+version: '3.7'
+services:
+  mongodb:
+    image: mongo:4.2.21
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      - /root/loca/mongo/db:/data/db
+#    networks:
+#      - my-net
+  #不想装robo 3t客户端时 可以用web端控制台
+  mongo-console:
+    image: mongo-express
+    container_name: mongo-console
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+      #管理控制台需要密码可以这么设置
+      #    - ME_CONFIG_BASICAUTH_USERNAME=admin
+      #    - ME_CONFIG_BASICAUTH_PASSWORD=admin
+      - TZ=Asia/Shanghai
+#    networks:
+#      - my-net
+
+#networks:
+#  #新增的网络 内部服务名调用
+#  my-net:
+#    external: true
