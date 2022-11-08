@@ -6,7 +6,8 @@ import com.spring.mongodb.model.Employee;
 
 public interface EmployeeService {
 
-	List<Employee> getAll();
+
+    List<Employee> getAll();
 
 	List<Employee> getEmployeeByFirstName(String firstName);
 

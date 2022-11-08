@@ -1,32 +1,167 @@
 version: '3.7'
+
+#Docker Networks
+networks:
+  general:
+    driver: bridge
+
 services:
   mongodb:
-    image: mongo:4.2.21
+    image: mongo
     container_name: mongodb
     ports:
       - "27017:27017"
     environment:
       - TZ=Asia/Shanghai
     volumes:
-      - /root/loca/mongo/db:/data/db
+      - ./cache/mongo/db:/data/db
 #    networks:
 #      - my-net
+
   #不想装robo 3t客户端时 可以用web端控制台
   mongo-console:
     image: mongo-express
     container_name: mongo-console
     ports:
-      - "8081:8081"
+      - "27018:8081"
+    depends_on:
+      - mongodb
     environment:
       - ME_CONFIG_MONGODB_SERVER=mongodb
       #管理控制台需要密码可以这么设置
-      #    - ME_CONFIG_BASICAUTH_USERNAME=admin
-      #    - ME_CONFIG_BASICAUTH_PASSWORD=admin
+#      - ME_CONFIG_BASICAUTH_USERNAME=admin
+#      - ME_CONFIG_BASICAUTH_PASSWORD=admin
       - TZ=Asia/Shanghai
-#    networks:
-#      - my-net
 
-#networks:
-#  #新增的网络 内部服务名调用
-#  my-net:
-#    external: true
+  elasticsearch:
+    container_name: es
+    build: ./config/elasticsearch
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    restart: always
+    volumes:
+      - ./cache/es1:/usr/share/elasticsearch/data
+    networks:
+      - general
+    environment:
+      - node.name=es1
+      - cluster.name=es-docker-cluster
+      - discovery.type=single-node
+
+  redis:
+    image: redis
+    restart: always
+    container_name: redis
+    command: --appendonly yes --requirepass autumn
+    ports:
+      - 6379:6379
+    volumes:
+      - "./cache/redis:/data"
+
+  # MySql
+  mysql:
+    container_name: mysql
+    build: ./config/mysql/config
+    restart: unless-stopped
+    tty: true
+    ports:
+      - '33061:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: 123321
+      # MYSQL_DATABASE: logix_crm
+      # MYSQL_USER: app
+      # MYSQL_PASSWORD: app123
+    volumes:
+      - ./cache/mysql/config/init:/docker-entrypoint-initdb.d
+      - ./cache/mysql/config/my.cnf:/etc/mysql/my.cnf
+      - ./cache/mysql/data:/var/lib/mysql:rw
+      - ./cache/mysql/resource:/resource
+    networks:
+      - general
+
+  zookeeper:
+    image: bitnami/zookeeper:latest
+    hostname: zookeeper
+    privileged: true
+    environment:
+      ALLOW_ANONYMOUS_LOGIN: "yes"
+      ZOO_AUTOPURGE_INTERVAL: 1
+      ZOO_AUTOPURGE_RETAIN_COUNT: 3
+    # volumes:
+    #     - ./docker-data/zookeeper/data:/bitnami/zookeeper
+    #    - ./docker-config/zookeeper/zoo.cfg:/opt/bitnami/zookeeper/conf/zoo.cfg
+    ports:
+      - "2181:2181"
+    networks:
+      - general
+
+
+  kafka1:
+    image: wurstmeister/kafka
+    ports:
+      - "9095:9092"
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: host.docker.internal
+      KAFKA_ADVERTISED_PORT: 9095
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LOG_DIRS: /kafka/logs
+      KAFKA_BROKER_ID: 500
+      KAFKA_offsets_topic_replication_factor: 2
+    # volumes:
+    #     - ./docker-data/kafka/var/run/docker.sock:/var/run/docker.sock
+    #     - ./docker-data/kafka/broker_500:/kafka
+    networks:
+      - general
+    depends_on:
+      - zookeeper
+
+  kafka2:
+    image: wurstmeister/kafka
+    ports:
+      - "9096:9092"
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: host.docker.internal
+      KAFKA_ADVERTISED_PORT: 9096
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LOG_DIRS: /kafka/logs
+      KAFKA_BROKER_ID: 501
+      KAFKA_offsets_topic_replication_factor: 2
+    # volumes:
+    #     - ./docker-data/kafka/var/run/docker.sock:/var/run/docker.sock
+    #     - ./docker-data/kafka/broker_501:/kafka
+    networks:
+      - general
+    depends_on:
+      - zookeeper
+
+  portainer:
+    container_name: portainer
+    image: portainer/portainer:latest
+    privileged: true
+    restart: always
+    ports:
+      - "9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - ./cache/portainer:/data:rw
+    networks:
+      - general
+    labels:
+      - "general.enable=true"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+
+  postgres:
+    image: postgis/postgis:13-master
+    container_name: demo_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+    ports:
+      - 5432:5432
+    volumes:
+      - /cache/postgresql/data:/var/lib/postgresql/data

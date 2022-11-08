@@ -1,10 +1,10 @@
 package com.spring.mongodb.repository;
 
+import com.spring.mongodb.model.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-import com.spring.mongodb.model.Employee;
-
 import java.util.List;
+
 /**
  * 员工Dao
  * 定义Dao接口继承MongoRepository<实体类型,主键类型>
@@ -12,11 +12,11 @@ import java.util.List;
  * @author zrj
  * @since 2022/3/29
  **/
-public interface EmployeeRepository extends MongoRepository<Employee, String> {
+public interface UserRepository extends MongoRepository<User, String> {
 
-    Employee findByFirstName(String firstName);
-
-    List<Employee> findByFirstNameLike(String firstName);
+//    User findByFirstName(String firstName);
+//
+//    List<User> findByFirstNameLike(String firstName);
 
 
 }

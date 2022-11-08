@@ -3,29 +3,44 @@ package com.spring.mongodb.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.hutool.core.util.IdUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
-
 import com.spring.mongodb.model.Employee;
 import com.spring.mongodb.repository.EmployeeRepository;
 import com.spring.mongodb.service.EmployeeService;
+import javax.annotation.Resource;
 
+/**
+ * 员工接口实现类
+ * 第一种方式，直接继承xxxRepository接口，其最终将会继承Repository标记接口，我们可以不必自己写实现类，轻松实现增删改查、分页、排序操作，但是对于比较复杂的查询，使用起来就比较费力。
+ * 第二种方式，直接使用xxxTemplate，这需要自己写实现类，但是这样增删改查可以自己控制，对于复杂查询，用起来得心应手。
+ *
+ * @author zrj
+ * @since 2022/3/29
+ **/
+@Slf4j
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
 
 
 	@Autowired
-	private EmployeeRepository repository;
+	private EmployeeRepository employeeRepository;
+//	EmployeeRepository employeeRepository;
+	@Resource
+	private MongoTemplate mongoTemplate;
 
 	@Override
 	public List<Employee> getAll() {
-		return repository.findAll();
+		return employeeRepository.findAll();
 	}
 
 	@Override
 	public Employee getEmployeeByLastName(String lastName) {
 
-		List<Employee> employees = repository.findAll();
+		List<Employee> employees = employeeRepository.findAll();
 
 		for (Employee emp : employees) {
 			if (emp.getLastName().equalsIgnoreCase(lastName))
@@ -36,7 +51,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
 	@Override
 	public Employee getEmployeeById(int empId) {
-		List<Employee> employees = repository.findAll();
+		List<Employee> employees = employeeRepository.findAll();
 		for (Employee emp : employees) {
 			if (empId == emp.getEmpId())
 				return emp;
@@ -47,7 +62,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 	@Override
 	public List<Employee> getEmployeeByFirstName(String firstName) {
 		List<Employee> employees = new ArrayList<>();
-		List<Employee> list = repository.findAll();
+		List<Employee> list = employeeRepository.findAll();
 		for (Employee emp : list) {
 			if (emp.getFirstName().equalsIgnoreCase(firstName))
 				employees.add(emp);
@@ -57,17 +72,17 @@ public class EmployeeServiceImpl implements EmployeeService {
 
 	@Override
 	public Employee getOneEmployeeByFirstName(String firstName) {
-		return repository.findByFirstName(firstName);
+		return employeeRepository.findByFirstName(firstName);
 	}
 
 	@Override
 	public List<Employee> getEmployeeByFirstNameLike(String firstName) {
-		return repository.findByFirstNameLike(firstName);
+		return employeeRepository.findByFirstNameLike(firstName);
 	}
 
 //	@Override
 //	public Employee getEmployeeByFirstName(Employee employee) {
-//		List<Employee> list = repository.findAll();
+//		List<Employee> list = employeeRepository.findAll();
 //		for (Employee emp : list) {
 //			if (emp.getFirstName().equals(employee.getFirstName()))
 //				return emp;
@@ -81,7 +96,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 //
 //		if (null != employee && null != employee.getFirstName()
 //				&& !(employee.getFirstName().equals(""))) {
-//			List<Employee> list = repository.findAll();
+//			List<Employee> list = employeeRepository.findAll();
 //
 //			for (Employee emp : list) {
 //				if (emp.getFirstName().toLowerCase().contains(employee.getFirstName().toLowerCase())) {
@@ -97,7 +112,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 		List<Employee> employees = new ArrayList<>();
 
 		if (salary > 0) {
-			List<Employee> list = repository.findAll();
+			List<Employee> list = employeeRepository.findAll();
 
 			for (Employee emp : list) {
 				if (emp.getSalary() > salary)
@@ -112,7 +127,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
 	@Override
 	public List<Employee> getEmployeeByCondition(Employee employee) {
-		List<Employee> list = repository.findAll();
+		List<Employee> list = employeeRepository.findAll();
 		List<Employee> employees = new ArrayList<>();
 
 		// This will return true if employee object is present(not null) any one of
